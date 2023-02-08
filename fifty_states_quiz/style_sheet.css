@@ -10,9 +10,27 @@ body {
 }
 
 input {
+  margin-right: 2em;
   border: none;
   padding: 0.5em;
   outline: none;
   background-color: var(--us_red);
   color: white;
+}
+button {
+  border: none;
+  padding: 0.5em;
+  outline: none;
+  background-color: var(--us_red);
+  color: white;
+}
+
+button:hover {
+  color: var(--us_red);
+  background-color: white;
+  cursor:pointer;
+}
+
+.buttons {
+  display: flex;
 }
