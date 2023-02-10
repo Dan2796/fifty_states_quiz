@@ -58,7 +58,6 @@ function onSubmit() {
     pastCorrectGuesses.push(userGuess);
     text1.textContent = 'Gotham is actually a city not a state, but I\'ll give you a bonus point anyway...';
     guessedGotham = true;
-    text3.textContent === '' ? text3.textContent += `, (gotham)` : text3.textContent += `(gotham)`;
     text3.textContent === '' ? text3.textContent += `(gotham)` : text3.textContent += `, (gotham)`;
   } else if (fiftyStates.includes(userGuess)) {
     pastCorrectGuesses.push(userGuess);
