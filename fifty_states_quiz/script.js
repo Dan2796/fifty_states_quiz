@@ -2,6 +2,7 @@
 const inputForm = document.getElementById('inputForm');
 const answerBox = document.querySelector('.answerBox');
 const resetButton = document.getElementById('resetButton');
+const timer = document.querySelector(".timer");
 const text1 = document.querySelector(".text1");
 const text2 = document.querySelector(".text2");
 const text3 = document.querySelector(".text3");
@@ -14,10 +15,26 @@ let gameState = 'readyToStart'; // other options are playing and gameOver
 let pastCorrectGuesses = [];
 let numberCorrectGuesses = 0;
 let guessedGotham = false;
+let targetTime;
+let timerInterval;
 
 // listen for submit button (return key since it's hidden) and give up button
 inputForm.addEventListener('submit', onSubmit);
 resetButton.addEventListener('click', onReset);
+
+timer.textContent = 'Time left: 4m0s';
+
+// set timer
+function countdown() {
+  let currentTime = new Date().getTime();
+  let minsLeft = Math.floor((targetTime - currentTime) / 60000);
+  let secsLeft = Math.floor(((targetTime - currentTime) % 60000) / 1000);
+  timer.textContent = `Time left: ${minsLeft}m${secsLeft}s`;
+  timer.style.color = 'var(--us_red)';
+  if (minsLeft <= 0 && secsLeft <= 0) {
+    onReset();
+  }
+}
 
 function onSubmit() {
   // Preventing page refresh
@@ -28,6 +45,9 @@ function onSubmit() {
   inputForm.reset();
   // start game if not already done
   if (gameState === 'readyToStart') {
+    targetTime = new Date().getTime() + 4 * 60000;
+    // set to 100 not 1000 because was getting weird lags at the start
+    timerInterval = setInterval(countdown, 100);
     gameState = 'playing';
   }
   // if conditions based on whether it's (1) a repeated answer, (2) gotham, (3) correct or (4) wrong with an
@@ -61,6 +81,8 @@ function onSubmit() {
 
 function onReset() {
   text2.textContent = '';
+  timer.style.color = 'white';
+  window.clearInterval(timerInterval);
   if (gameState === 'playing') {
     answerBox.style.display = 'none';
     // send reset button to the left and widen because the answer box is gone
@@ -87,6 +109,7 @@ function onReset() {
     numberCorrectGuesses = 0;
     pastCorrectGuesses = [];
     resetButton.textContent = 'Give up';
+    timer.textContent = 'Time left: 4m00s';
     text1.textContent = '';
     text3.textContent = '';
     answerBox.focus();

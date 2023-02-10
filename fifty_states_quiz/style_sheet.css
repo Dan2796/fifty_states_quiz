@@ -9,6 +9,11 @@ body {
   color: white;
 }
 
+.formResetTimer {
+  display: flex;
+  flex-direction: row;
+}
+
 input {
   margin-right: 2em;
   border: none;
@@ -17,7 +22,9 @@ input {
   background-color: var(--us_red);
   color: white;
 }
+
 button {
+  margin-right: 2em;
   border: none;
   padding: 0.5em;
   outline: none;
@@ -26,11 +33,8 @@ button {
 }
 
 button:hover {
+  margin-right: 2em;
   color: var(--us_red);
   background-color: white;
   cursor:pointer;
-}
-
-.buttons {
-  display: flex;
 }
