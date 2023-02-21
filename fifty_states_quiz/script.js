@@ -1,121 +1,159 @@
 // note that fifty states js file must be read first to provide the array
 const inputForm = document.getElementById('inputForm');
-const answerBox = document.querySelector('.answerBox');
+const answerBox = document.getElementById('answerBox');
 const resetButton = document.getElementById('resetButton');
-const timer = document.querySelector(".timer");
-const text1 = document.querySelector(".text1");
-const text2 = document.querySelector(".text2");
-const text3 = document.querySelector(".text3");
+const timer = document.getElementById("timer");
+const text1 = document.getElementById("text1");
+const text2 = document.getElementById("text2");
+const text3 = document.getElementById("text3");
 
-// focus on answer box when refreshing
-answerBox.focus();
+// set time limit on game in milliseconds:
+const timeLimit = 4 * 60000;
 
 // set variables to keep track of the state of the game
-let gameState = 'readyToStart'; // other options are playing and gameOver
+let playing = false;
 let pastCorrectGuesses = [];
 let numberCorrectGuesses = 0;
-let guessedGotham = false;
 let targetTime;
 let timerInterval;
 
+// start in the correct state - saves having to code the starting state into the html
+displayStartState();
+
 // listen for submit button (return key since it's hidden) and give up button
 inputForm.addEventListener('submit', onSubmit);
-resetButton.addEventListener('click', onReset);
-
-timer.textContent = 'Time left: 4m0s';
-
-// set timer
-function countdown() {
-  let currentTime = new Date().getTime();
-  let minsLeft = Math.floor((targetTime - currentTime) / 60000);
-  let secsLeft = Math.floor(((targetTime - currentTime) % 60000) / 1000);
-  timer.textContent = `Time left: ${minsLeft}m${secsLeft}s`;
-  timer.style.color = 'var(--us_red)';
-  if (minsLeft <= 0 && secsLeft <= 0) {
-    onReset();
+resetButton.addEventListener('click', () => {
+  if (playing) {
+    gameOver();
+    displayFailedState(fiftyStates, numberCorrectGuesses, pastCorrectGuesses);
+  } else {
+    displayStartState(fiftyStates, numberCorrectGuesses, pastCorrectGuesses);
   }
-}
+});
 
-function onSubmit() {
+function onSubmit(e) {
   // Preventing page refresh
-  event.preventDefault();
+  e.preventDefault();
   // store user guess as a constant - want to ignore case so just convert to lower
-  const userGuess = answerBox.value.toLowerCase();
+  const userGuess = answerBox.value.toLowerCase().trim();
   // refresh input box once an answer has been submitted
   inputForm.reset();
   // start game if not already done
-  if (gameState === 'readyToStart') {
-    targetTime = new Date().getTime() + 4 * 60000;
-    // set to 100 not 1000 because was getting weird lags at the start
-    timerInterval = setInterval(countdown, 100);
-    gameState = 'playing';
+  if (!playing) {
+    displayPlayState();
+    playing = true;
+    numberCorrectGuesses = 0;
+    pastCorrectGuesses = [];
+    targetTime = new Date().getTime() + timeLimit;
+    // set to 100 not 1000 because I was getting weird lags at the start
+    timerInterval = setInterval( function() {
+      // need to pass countdown the parameters required for displaying the failed state for if timer runs out
+      countdown(targetTime, fiftyStates, numberCorrectGuesses, pastCorrectGuesses);
+      }, 100 );
   }
-  // if conditions based on whether it's (1) a repeated answer, (2) gotham, (3) correct or (4) wrong with an
-  // escape clause in case it's right and also the 50th answer
   if (pastCorrectGuesses.includes(userGuess)) {
-    text1.textContent = 'You\'ve already got that one.';
-  } else if (userGuess === 'gotham') {
-    pastCorrectGuesses.push(userGuess);
-    text1.textContent = 'Gotham is actually a city not a state, but I\'ll give you a bonus point anyway...';
-    guessedGotham = true;
-    text3.textContent === '' ? text3.textContent += `(gotham)` : text3.textContent += `, (gotham)`;
+    updateTextOnGuess(true, true, numberCorrectGuesses, userGuess)
   } else if (fiftyStates.includes(userGuess)) {
     pastCorrectGuesses.push(userGuess);
-    text1.textContent = 'Yep, that\'s one of them!';
-    text3.textContent === '' ? text3.textContent += `${userGuess}` : text3.textContent += `, ${userGuess}`;
-    // note this comes after checking if number correct is zero
     numberCorrectGuesses++;
     // end game if they are all there
     if (numberCorrectGuesses === 50) {
-      onReset();
+      gameOver();
+      displayWonState();
       return;
     }
+    updateTextOnGuess(true, false, numberCorrectGuesses, userGuess)
+  } else {
+    updateTextOnGuess(false, false, numberCorrectGuesses, userGuess)
+  }
+}
+
+function formatTime(milliseconds) {
+  // catch negative numbers in case timer runs out and interval checks once it's negative
+  let minutesLeft = milliseconds > 0 ? Math.floor((milliseconds) / 60000) : 0;
+  let secondsLeft = milliseconds > 0 ? Math.floor((milliseconds % 60000) / 1000): 0;
+  return `${minutesLeft}m${secondsLeft}s`
+}
+
+function countdown(targetTime, fiftyStates, numberCorrectGuesses, pastCorrectGuesses) {
+  let currentTime = new Date().getTime();
+  let timeLeft = targetTime - currentTime;
+  timer.textContent = `Time left: ${formatTime(timeLeft)}`;
+  timer.style.color = 'var(--us_red)';
+  if (timeLeft <= 0) {
+    gameOver();
+    displayFailedState(fiftyStates, numberCorrectGuesses, pastCorrectGuesses);
+  }
+}
+
+function updateTextOnGuess(guessCorrect, alreadyGuessed, numberCorrectGuesses, userGuess) {
+  if (guessCorrect && alreadyGuessed) {
+    text1.textContent = 'You\'ve already got that one.'
+  } else if (guessCorrect && !alreadyGuessed) {
+    text1.textContent = 'Yep, that\'s one of them!';
+    text3.textContent === '' ? text3.textContent += `${userGuess}` : text3.textContent += `, ${userGuess}`;
   } else {
     text1.textContent = 'Oops, not quite...';
   }
-  // this comes last because we don't need to bother changing it if it's the last guess, in which case the function
-  // will already have exited.
   text2.textContent = `${numberCorrectGuesses} / 50. Last guess: ${userGuess}`;
 }
 
-function onReset() {
-  text2.textContent = '';
-  timer.style.color = 'white';
+function gameOver(){
   window.clearInterval(timerInterval);
-  if (gameState === 'playing') {
-    answerBox.style.display = 'none';
-    // send reset button to the left and widen because the answer box is gone
-    resetButton.textContent = 'Have another go';
-    resetButton.style.margin = 0;
-    resetButton.style.paddingLeft = '3em';
-    resetButton.style.paddingRight = '3em';
-    if (numberCorrectGuesses === 50 && guessedGotham) {
-      text1.textContent = 'That\'s the lot, 50 out of 50 - nice one.';
-    } else if (numberCorrectGuesses === 50 && !guessedGotham) {
-      text1.textContent = 'Well done, 51 out of 50! You even got the bonus point you nerd.';
-    } else {
-      text1.textContent = `Oh bad luck, you only got ${numberCorrectGuesses} out of 50. You missed the ones in red below:`;
-      text2.style.color = 'var(--us_red)';
-      for (const state of fiftyStates) {
+  playing = false;
+}
+
+function displayStartState() {
+  text1.textContent = 'Have a shot!';
+  text2.textContent = '';
+  text3.textContent = '';
+  resetButton.style.display = 'none';
+  answerBox.style.display = 'flex';
+  resetButton.textContent = 'Give up';
+  timer.textContent = `Time left: ${formatTime(timeLimit)}`;
+  text1.textContent = '';
+  text3.textContent = '';
+  text2.style.color = 'white';
+  text2.textContent = '';
+  // focus on answer box when refreshing
+  answerBox.focus();
+}
+
+function displayPlayState() {
+  text1.textContent = '';
+  text2.textContent = '';
+  text3.textContent = '';
+  resetButton.style.display = 'flex';
+}
+
+function displayFailedState(fiftyStates, numberCorrectGuesses, pastCorrectGuesses) {
+  text1.textContent = `Oh bad luck, you only got ${numberCorrectGuesses} out of 50. You missed the ones in red below:`;
+  text2.textContent = '';
+  for (const state of fiftyStates) {
         if (!pastCorrectGuesses.includes(state)) {
           text2.textContent === '' ? text2.textContent = state : text2.textContent += `, ${state}`;
         }
-      }
-    }
-    gameState = 'gameOver';
-  } else if (gameState === 'gameOver') {
-    answerBox.style.display = 'flex';
-    numberCorrectGuesses = 0;
-    pastCorrectGuesses = [];
-    resetButton.textContent = 'Give up';
-    timer.textContent = 'Time left: 4m00s';
-    text1.textContent = '';
-    text3.textContent = '';
-    answerBox.focus();
-    text2.style.color = 'white';
-    text2.textContent = '';
-    gameState = 'readyToStart';
-  } else {
-    text1.textContent = 'Can\'t restart yet - you haven\'t even started!'
   }
+  answerBox.style.display = 'none';
+  // send reset button to the left and widen because the answer box is gone
+  resetButton.textContent = 'Have another go';
+  resetButton.style.margin = '0';
+  resetButton.style.paddingLeft = '3em';
+  resetButton.style.paddingRight = '3em';
+  // styles:
+  text2.style.color = 'var(--us_red)';
+  timer.style.color = 'white';
+}
+
+function displayWonState() {
+  resetButton.textContent = 'Have another go';
+  text1.textContent = 'That\'s the lot, 50 out of 50 - nice one.';
+  text2.textContent = '';
+  // text 3 left unchanged
+  timer.style.color = 'white';
+  answerBox.style.display = 'none';
+  // send reset button to the left and widen because the answer box is gone
+  resetButton.style.margin = '0';
+  resetButton.style.paddingLeft = '3em';
+  resetButton.style.paddingRight = '3em';
 }
