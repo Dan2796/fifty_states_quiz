@@ -1,11 +1,11 @@
 // note that fifty states js file must be read first to provide the array
+const timer = document.getElementById('timer');
 const inputForm = document.getElementById('inputForm');
 const answerBox = document.getElementById('answerBox');
 const resetButton = document.getElementById('resetButton');
-const timer = document.getElementById("timer");
-const text1 = document.getElementById("text1");
-const text2 = document.getElementById("text2");
-const text3 = document.getElementById("text3");
+const text1 = document.getElementById('text1');
+const text2 = document.getElementById('text2');
+const text3 = document.getElementById('text3');
 
 // set time limit on game in milliseconds:
 const timeLimit = 4 * 60000;
@@ -68,18 +68,18 @@ function onSubmit(e) {
   }
 }
 
-function formatTime(milliseconds) {
+function formatTimer(milliseconds) {
   // catch negative numbers in case timer runs out and interval checks once it's negative
   let minutesLeft = milliseconds > 0 ? Math.floor((milliseconds) / 60000) : 0;
   let secondsLeft = milliseconds > 0 ? Math.floor((milliseconds % 60000) / 1000): 0;
-  return `${minutesLeft}m${secondsLeft}s`
+  return `Time left: ${minutesLeft}m${secondsLeft}s`
 }
 
 function countdown(targetTime, fiftyStates, numberCorrectGuesses, pastCorrectGuesses) {
   let currentTime = new Date().getTime();
   let timeLeft = targetTime - currentTime;
-  timer.textContent = `Time left: ${formatTime(timeLeft)}`;
-  timer.style.color = 'var(--us_red)';
+  timer.textContent = formatTimer(timeLeft);
+  timer.className = 'timerActive';
   if (timeLeft <= 0) {
     gameOver();
     displayFailedState(fiftyStates, numberCorrectGuesses, pastCorrectGuesses);
@@ -104,29 +104,29 @@ function gameOver(){
 }
 
 function displayStartState() {
+  timer.textContent = formatTimer(timeLimit);
+  answerBox.className = 'answerBox';
+  answerBox.focus();
+  resetButton.textContent = 'Give up';
+  resetButton.className = 'resetButtonHidden';
   text1.textContent = 'Have a shot!';
   text2.textContent = '';
+  text2.className = 'text2';
   text3.textContent = '';
-  resetButton.style.display = 'none';
-  answerBox.style.display = 'flex';
-  resetButton.textContent = 'Give up';
-  timer.textContent = `Time left: ${formatTime(timeLimit)}`;
-  text1.textContent = '';
-  text3.textContent = '';
-  text2.style.color = 'white';
-  text2.textContent = '';
-  // focus on answer box when refreshing
-  answerBox.focus();
 }
 
 function displayPlayState() {
+  resetButton.className= 'resetButton';
   text1.textContent = '';
   text2.textContent = '';
   text3.textContent = '';
-  resetButton.style.display = 'flex';
 }
 
 function displayFailedState(fiftyStates, numberCorrectGuesses, pastCorrectGuesses) {
+  timer.className = 'timerInactive';
+  answerBox.className = 'answerBoxHidden';
+  resetButton.textContent = 'Have another go';
+  resetButton.className = 'resetButtonWide';
   text1.textContent = `Oh bad luck, you only got ${numberCorrectGuesses} out of 50. You missed the ones in red below:`;
   text2.textContent = '';
   for (const state of fiftyStates) {
@@ -134,26 +134,14 @@ function displayFailedState(fiftyStates, numberCorrectGuesses, pastCorrectGuesse
           text2.textContent === '' ? text2.textContent = state : text2.textContent += `, ${state}`;
         }
   }
-  answerBox.style.display = 'none';
-  // send reset button to the left and widen because the answer box is gone
-  resetButton.textContent = 'Have another go';
-  resetButton.style.margin = '0';
-  resetButton.style.paddingLeft = '3em';
-  resetButton.style.paddingRight = '3em';
-  // styles:
-  text2.style.color = 'var(--us_red)';
-  timer.style.color = 'white';
+  text2.className = 'text2Failed';
 }
 
 function displayWonState() {
+  timer.className = 'timerInactive';
+  answerBox.className = 'answerBoxHidden';
   resetButton.textContent = 'Have another go';
+  resetButton.className = 'resetButtonWide';
   text1.textContent = 'That\'s the lot, 50 out of 50 - nice one.';
   text2.textContent = '';
-  // text 3 left unchanged
-  timer.style.color = 'white';
-  answerBox.style.display = 'none';
-  // send reset button to the left and widen because the answer box is gone
-  resetButton.style.margin = '0';
-  resetButton.style.paddingLeft = '3em';
-  resetButton.style.paddingRight = '3em';
 }

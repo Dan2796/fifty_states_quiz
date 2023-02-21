@@ -38,3 +38,38 @@ button:hover {
   background-color: white;
   cursor:pointer;
 }
+
+.timerInactive {
+  color : white;
+}
+
+.timerActive {
+  color : var(--us_red);
+}
+
+.answerBox {
+  display: flex;
+}
+
+.answerBoxHidden {
+  display: none;
+}
+.resetButton {
+  display: flex;
+}
+
+.resetButtonHidden {
+  display: none;
+}
+.resetButtonWide{
+  margin: 0;
+  padding-left: 3em;
+  padding-right: 3em;
+}
+
+.text2 {
+  color: white;
+}
+.text2Failed {
+  color: var(--us_red);
+}

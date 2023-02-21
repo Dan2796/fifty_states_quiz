@@ -5,18 +5,18 @@
 <script src="script.js" defer></script>
 <body>
   <h1>US States Quiz</h1>
-  <h2>Enter as many US states as you can before the timer runs out!</h2>
-  <p class="timer" id="timer"></p>
+  <h2>Name as many US states as you can before the timer runs out!</h2>
+  <p class="timer_inactive" id="timer"></p>
   <div class="formResetTimer">
     <form id="inputForm">
       <label for="answerBox"></label>
       <input autocomplete="off" class="answerBox" id="answerBox" type="text">
-      <input type="submit" class="submittedAnswer" id="submittedAnswer" hidden>
+      <input class="submittedAnswer" id="submittedAnswer" type="submit" hidden>
     </form>
-    <button id="resetButton">Give up</button>
+    <button class="resetButton" id="resetButton">Give up</button>
   </div>
   <p id="text1"></p>
-  <p id="text2"></p>
+  <p class="text2" id="text2"></p>
   <p id="text3"></p>
 </body>
 </html>
